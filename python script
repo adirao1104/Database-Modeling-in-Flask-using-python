@@ -1,0 +1,102 @@
+from flask import Flask, render_template, request, redirect, jsonify
+from flask_mysqldb import MySQL
+import yaml
+import json
+app = Flask(__name__)
+
+# Configure db
+db = yaml.load(open('db.yaml'))
+app.config['MYSQL_HOST'] = db['mysql_host']
+app.config['MYSQL_USER'] = db['mysql_user']
+app.config['MYSQL_PASSWORD'] = db['mysql_password']
+app.config['MYSQL_DB'] = db['mysql_db']
+
+mysql = MySQL(app)
+
+
+@app.route('/data', methods=['GET'])#Get data from database
+def users():
+    
+    cur = mysql.connection.cursor()
+    cur.execute('''SELECT * FROM `water_level` ORDER BY `ID` DESC ''')
+    row_headers=[x[0] for x in cur.description] #this will extract row headers
+    rv = cur.fetchall()
+    json_data=[]
+    for result in rv:
+        json_data.append(dict(zip(row_headers,result)))
+    return jsonify(json_data)
+       
+    #return str(json_data)
+    return jsonify(rv)
+    cursor.close() 
+    conn.close()
+@app.route('/test')
+def liv():
+   cur = mysql.connection.cursor()
+   cur.execute("SELECT * FROM `water_level` ORDER BY `ID` DESC LIMIT 1 ")
+   row_headers=[x[0] for x in cur.description] #this will extract row headers
+   
+   rv = cur.fetchall()
+   payload = []
+   
+   for res in rv:
+       
+       
+       content = {'response':dict(zip(row_headers, res))}
+       
+       payload.append(content)
+       
+   return jsonify(payload)
+   
+   
+@app.route('/hello')
+def index():
+   cur = mysql.connection.cursor()
+   cur.execute("SELECT * FROM `water_level` ORDER BY `ID` DESC ")
+   rv = cur.fetchall()
+   payload = []
+   content = {}
+   for result in rv:
+       content = {'id': result[0], 'date': result[1], 'time': result[2],'senval1': result[3],'senval2': result[4]}
+       payload.append(content)
+       content = {}
+   return jsonify(payload)
+	
+@app.route('/add', methods=['GET', 'POST'])#Post data to the database
+def add_user():
+    
+    data = request.form
+    s1=data['val1']
+    s2=data['val2']
+    ser_dt=str(date.today())
+    now = datetime.now()
+    time = now.strftime("%H:%M:%S")
+    current_time = time
+    if request.method == 'POST':
+        try:
+            
+        
+            cur = mysql.connection.cursor()
+            cur.execute("INSERT INTO water_level (sen_val,sen_val2,curdate,curtime) VALUES (%s,%s,%s,%s)""",(s1,s2,ser_dt,current_time))
+            mysql.connection.commit()
+            cur.close()
+            
+        except:
+             return jsonify({'status':'error in API syntax'})
+             mysql.connection.rollback()
+             mysql.connection.commit()
+        #return jsonify({'status':'data inserted successfully'})
+        resp = jsonify({'msg':'data inserted successfully'})
+        resp.status_code = 200
+        return resp
+    
+
+
+   
+if __name__ == '__main__':
+    
+    app.run(debug=True)
+
+
+
+
