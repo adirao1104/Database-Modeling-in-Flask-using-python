@@ -1,0 +1,7 @@
+mysql_host: 'localhost'
+mysql_user: 'root'
+# Enter your password in field below
+mysql_password: ''
+mysql_db: 'water_level_monitoring'
+#mysql_port: 5000
+#API_KEY = "c65da726-8ba7-4c27-a2b4-cf16eb8993c6"
